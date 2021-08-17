@@ -364,3 +364,77 @@ LF1 <- contrast(model2.emm.s,
                 offset = 0)
 LF1
 confint(LF1) # 95% confidence interval
+                        
+                   
+# Combine plots for presentation
+# Combined plot 1: The mean values by stress level, day, and time interval (line plot)
+# p1: The average of total average speed
+p1<-ggplot(model1_df, aes(x=StressLevel, y=AvgTotalAvgSpeedValue, group=TimeInterval, color=TimeInterval)) + 
+  stat_summary(fun=mean, geom="line") + 
+  stat_summary(fun=mean, geom="point") + 
+  labs(x="Stress level",
+       y="The average of total average speed (mm/s)",
+       color="Time Interval",
+       title="The mean of the average of the total average speed") +
+  facet_wrap(~Day,
+             labeller = labeller(Day = c("2" = "Day 2", "7" = "Day 7", "14" = "Day 14"))) + 
+  theme_bw()
+# p2: The average of total average distance
+p2<-ggplot(model2_df, aes(x=StressLevel, y=AvgTotalDistanceValue, group=TimeInterval, color=TimeInterval)) + 
+  stat_summary(fun=mean, geom="line") + 
+  stat_summary(fun=mean, geom="point") + 
+  labs(x="Stress level",
+       y="The average of total average distance (mm)",
+       color="Time Interval",
+       title="The mean of the average of the total distance ") +
+  facet_wrap(~Day,
+             labeller = labeller(Day = c("2" = "Day 2", "7" = "Day 7", "14" = "Day 14"))) + 
+  theme_bw()
+
+# Create the same legend
+# Source: https://stackoverflow.com/questions/38559645/using-arrangegrob-to-add-a-sub-plot-as-a-legend
+g_legend<-function(a.gplot){
+  tmp <- ggplot_gtable(ggplot_build(a.gplot))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  legend <- tmp$grobs[[leg]]
+  return(legend)}
+mylegend<-g_legend(p1)
+# Combine 2 plots: p1 + p2
+grid.arrange(arrangeGrob(p1 + theme(legend.position="none"),
+                         p2 + theme(legend.position="none"),
+                         nrow=1),
+             mylegend, nrow=2, heights=c(10, 2))
+
+
+# Combined plot 2: The mean values by stress level, day, and time interval (box plot)
+# p3: The average of the total average speed
+p3<-ggboxplot(
+  model1_df, x = "StressLevel", y = "AvgTotalAvgSpeedValue",
+  color = "TimeInterval", palette = "jco",
+  facet.by = "Day", short.panel.labs = FALSE,
+  title="The average of the total average speed",
+  ylab = "Average of the total \naverage speed(mm/s)",
+  xlab = "Stress Level",
+  legend.title= "Time Interval",
+  legend="none"
+)
+# p4: The average of the total distance
+p4<-ggboxplot(
+  model2_df, x = "StressLevel", y = "AvgTotalDistanceValue",
+  color = "TimeInterval", palette = "jco",
+  facet.by = "Day", short.panel.labs = FALSE,
+  title="The average of the total distance",
+  ylab = "Average of the total \ndistance(mm)",
+  xlab = "Stress Level",
+  legend.title = "Time Interval",
+  legend="none"
+)
+# Create the same legend
+mylegend1<-g_legend(p3)
+# Combine 2 plots: p3 + p4
+grid.arrange(
+  arrangeGrob(p3,
+              p4,
+              nrow=1),
+  mylegend1, nrow = 2, heights=c(10, 1)
+)
